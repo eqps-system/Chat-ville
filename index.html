@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Ville Chat Plus</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#011D5C" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<style>
+  :root{
+    --azul: #011D5C;
+    --azul-2: #06285e;
+    --laranja: #F69220;
+    --branco: #FFFFFF;
+    --cinza-texto: #b7c2df;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{margin:0; height:100%; font-family: -apple-system, "Segoe UI", Roboto, Arial, sans-serif; background: var(--azul); color: var(--branco);}
+  #app{max-width:480px; margin:0 auto; height:100vh; display:flex; flex-direction:column; position:relative; overflow:hidden;}
+
+  /* ---------- LOGIN ---------- */
+  .login-screen{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px; gap:24px;}
+  .logo-mark{width:96px; height:96px; border-radius:22px; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.35);}
+  .logo-mark img{width:100%; height:100%; object-fit:cover;}
+  .brand-title{font-size:26px; font-weight:800; letter-spacing:.5px;}
+  .brand-title span{color: var(--laranja);}
+  .login-form{width:100%; display:flex; flex-direction:column; gap:12px; margin-top:8px;}
+  input{
+    width:100%; padding:14px 16px; border-radius:12px; border:1px solid #1c3a7c;
+    background: var(--azul-2); color:var(--branco); font-size:15px; outline:none;
+  }
+  input::placeholder{color:var(--cinza-texto);}
+  input:focus{border-color: var(--laranja);}
+  .btn-primary{
+    background: var(--laranja); color:var(--azul); font-weight:700; border:none;
+    padding:14px 16px; border-radius:12px; font-size:15px; cursor:pointer;
+  }
+  .btn-primary:active{opacity:.85;}
+  .btn-ghost{background:transparent; color:var(--branco); border:1px solid #1c3a7c; padding:12px 16px; border-radius:12px; font-size:14px; cursor:pointer;}
+  .hint{font-size:12px; color:var(--cinza-texto); text-align:center;}
+
+  /* ---------- HEADER ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between; padding:16px 18px;
+    background: var(--azul); border-bottom:1px solid #10265e;
+  }
+  .topbar-title{font-size:18px; font-weight:800;}
+  .topbar-title span{color:var(--laranja);}
+  .avatar{width:34px; height:34px; border-radius:50%; background:var(--laranja); color:var(--azul);
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:13px;}
+
+  /* ---------- CONTENT ---------- */
+  .screen{flex:1; overflow-y:auto; padding:18px; padding-bottom:90px; display:none;}
+  .screen.active{display:block;}
+  .card{background: var(--azul-2); border:1px solid #10265e; border-radius:16px; padding:16px; margin-bottom:14px;}
+  .section-label{font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--laranja); font-weight:700; margin-bottom:10px;}
+
+  /* Ponto */
+  .clock{font-size:40px; font-weight:800; text-align:center; letter-spacing:1px;}
+  .clock-date{text-align:center; color:var(--cinza-texto); font-size:13px; margin-bottom:16px;}
+  .bater-btn{
+    width:160px; height:160px; border-radius:50%; margin:8px auto; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; background: var(--laranja); color: var(--azul);
+    border:none; font-weight:800; font-size:16px; cursor:pointer; box-shadow:0 12px 28px rgba(246,146,32,.3);
+  }
+  .bater-btn small{font-weight:600; font-size:11px; margin-top:4px; opacity:.85;}
+  .geo-status{text-align:center; font-size:12px; color:var(--cinza-texto); margin-top:10px; min-height:16px;}
+  .entry-row{display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #10265e;}
+  .entry-row:last-child{border-bottom:none;}
+  .tag{font-size:11px; font-weight:700; padding:3px 8px; border-radius:20px;}
+  .tag.entrada{background:rgba(66,199,122,.15); color:#5fe0a0;}
+  .tag.saida{background:rgba(246,146,32,.18); color:var(--laranja);}
+  .empty{text-align:center; color:var(--cinza-texto); font-size:13px; padding:20px 0;}
+
+  /* Despesas */
+  select{
+    width:100%; padding:14px 16px; border-radius:12px; border:1px solid #1c3a7c;
+    background: var(--azul-2); color:var(--branco); font-size:15px; outline:none; margin-bottom:10px;
+  }
+  .file-btn{display:flex; align-items:center; justify-content:center; gap:8px; border:1.5px dashed #2a4a90;
+    border-radius:12px; padding:16px; color:var(--cinza-texto); font-size:13px; cursor:pointer; margin-bottom:10px;}
+  .file-btn.has-file{border-color:var(--laranja); color:var(--laranja);}
+  .exp-row{display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid #10265e;}
+  .exp-row:last-child{border-bottom:none;}
+  .exp-value{font-weight:800;}
+  .status-pill{font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; background:rgba(246,146,32,.15); color:var(--laranja);}
+
+  /* Chat */
+  .chat-list{display:flex; flex-direction:column; gap:10px; padding-bottom:8px;}
+  .bubble{max-width:78%; padding:10px 14px; border-radius:16px; font-size:14px; line-height:1.4;}
+  .bubble.me{align-self:flex-end; background:var(--laranja); color:var(--azul); border-bottom-right-radius:4px;}
+  .bubble.them{align-self:flex-start; background:var(--azul-2); border:1px solid #10265e; border-bottom-left-radius:4px;}
+  .bubble-meta{font-size:10px; opacity:.7; margin-top:4px; display:block;}
+  .chat-input-bar{position:fixed; bottom:64px; left:0; right:0; max-width:480px; margin:0 auto; display:flex; gap:8px; padding:10px 14px; background:var(--azul); border-top:1px solid #10265e;}
+  .chat-input-bar input{flex:1;}
+  .send-btn{background:var(--laranja); border:none; width:44px; height:44px; border-radius:12px; color:var(--azul); font-weight:800; cursor:pointer; flex-shrink:0;}
+
+  /* Perfil */
+  .profile-name{font-size:20px; font-weight:800;}
+  .profile-sub{color:var(--cinza-texto); font-size:13px; margin-bottom:16px;}
+  .info-row{display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #10265e; font-size:14px;}
+  .info-row span:first-child{color:var(--cinza-texto);}
+  .footer-credit{text-align:center; font-size:11px; color:#5a6f9e; margin-top:24px; padding-bottom:8px;}
+
+  /* ---------- BOTTOM NAV ---------- */
+  .bottom-nav{
+    position:fixed; bottom:0; left:0; right:0; max-width:480px; margin:0 auto;
+    display:flex; background: var(--azul); border-top:1px solid #10265e; padding:6px 4px calc(env(safe-area-inset-bottom) + 6px);
+  }
+  .nav-btn{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 0; background:none; border:none; color:var(--cinza-texto); font-size:10px; cursor:pointer;}
+  .nav-btn .ic{font-size:19px;}
+  .nav-btn.active{color: var(--laranja);}
+
+  .install-banner{
+    display:none; position:absolute; top:10px; left:10px; right:10px; background:var(--laranja); color:var(--azul);
+    border-radius:12px; padding:10px 14px; font-size:12px; font-weight:700; align-items:center; justify-content:space-between; z-index:20;
+  }
+  .install-banner button{background:var(--azul); color:var(--branco); border:none; border-radius:8px; padding:6px 10px; font-size:11px; font-weight:700; cursor:pointer;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- LOGIN -->
+  <div class="login-screen" id="loginScreen">
+    <div class="logo-mark"><img src="icons/icon-192.png" alt="Ville" /></div>
+    <div class="brand-title">VILLE CHAT <span>PLUS</span></div>
+    <div class="login-form">
+      <input id="loginNome" type="text" placeholder="Nome completo" />
+      <input id="loginMatricula" type="text" placeholder="Matrícula" />
+      <button class="btn-primary" onclick="fazerLogin()">Entrar</button>
+    </div>
+    <div class="hint">Gestão de ponto, despesas e comunicação da equipe de campo</div>
+  </div>
+
+  <!-- APP -->
+  <div id="mainApp" style="display:none; flex-direction:column; height:100%;">
+    <div class="install-banner" id="installBanner">
+      <span>Instale o app na tela inicial</span>
+      <button onclick="instalarApp()">Instalar</button>
+    </div>
+
+    <div class="topbar">
+      <div class="topbar-title">VILLE CHAT <span>PLUS</span></div>
+      <div class="avatar" id="avatarInitials">–</div>
+    </div>
+
+    <!-- PONTO -->
+    <div class="screen active" id="screen-ponto">
+      <div class="card">
+        <div class="clock" id="relogio">--:--:--</div>
+        <div class="clock-date" id="dataHoje">--</div>
+        <button class="bater-btn" onclick="baterPonto()">
+          BATER PONTO
+          <small>toque para registrar</small>
+        </button>
+        <div class="geo-status" id="geoStatus">Aguardando localização…</div>
+      </div>
+      <div class="card">
+        <div class="section-label">Registros de hoje</div>
+        <div id="listaPonto"><div class="empty">Nenhum registro ainda</div></div>
+      </div>
+    </div>
+
+    <!-- DESPESAS -->
+    <div class="screen" id="screen-despesas">
+      <div class="card">
+        <div class="section-label">Nova despesa</div>
+        <select id="expCategoria">
+          <option value="Combustível">Combustível</option>
+          <option value="Alimentação">Alimentação</option>
+          <option value="Hospedagem">Hospedagem</option>
+          <option value="Outros">Outros</option>
+        </select>
+        <input id="expValor" type="number" step="0.01" placeholder="Valor (R$)" />
+        <label class="file-btn" id="expFileBtn">
+          📎 Anexar foto do recibo
+          <input type="file" id="expFile" accept="image/*" capture="environment" style="display:none" />
+        </label>
+        <button class="btn-primary" onclick="adicionarDespesa()">Adicionar despesa</button>
+      </div>
+      <div class="card">
+        <div class="section-label">Minhas despesas</div>
+        <div id="listaDespesas"><div class="empty">Nenhuma despesa registrada</div></div>
+      </div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="screen" id="screen-chat">
+      <div class="card" style="min-height:60vh; display:flex; flex-direction:column;">
+        <div class="section-label">Equipe de Campo</div>
+        <div class="chat-list" id="chatList"></div>
+      </div>
+    </div>
+
+    <!-- PERFIL -->
+    <div class="screen" id="screen-perfil">
+      <div class="card">
+        <div class="profile-name" id="perfilNome">–</div>
+        <div class="profile-sub" id="perfilMatricula">–</div>
+        <div class="info-row"><span>Status</span><span>Ativo</span></div>
+        <div class="info-row"><span>Sincronização</span><span id="syncStatus">Dados salvos no aparelho</span></div>
+        <div class="info-row"><span>Versão</span><span>MVP 0.1</span></div>
+      </div>
+      <button class="btn-ghost" style="width:100%" onclick="sair()">Sair</button>
+      <div class="footer-credit">Desenvolvido por Marcos Garçon</div>
+    </div>
+
+    <div class="chat-input-bar" id="chatInputBar" style="display:none;">
+      <input id="chatInput" type="text" placeholder="Mensagem…" onkeydown="if(event.key==='Enter')enviarMensagem()" />
+      <button class="send-btn" onclick="enviarMensagem()">➤</button>
+    </div>
+
+    <div class="bottom-nav">
+      <button class="nav-btn active" data-screen="ponto" onclick="irPara('ponto')"><span class="ic">⏱️</span>Ponto</button>
+      <button class="nav-btn" data-screen="despesas" onclick="irPara('despesas')"><span class="ic">🧾</span>Despesas</button>
+      <button class="nav-btn" data-screen="chat" onclick="irPara('chat')"><span class="ic">💬</span>Chat</button>
+      <button class="nav-btn" data-screen="perfil" onclick="irPara('perfil')"><span class="ic">👤</span>Perfil</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------- Persistência local (mesma base que sincronizará com o backend depois) ----------
+const store = {
+  get(key, fallback){ try{ return JSON.parse(localStorage.getItem(key)) ?? fallback; }catch(e){ return fallback; } },
+  set(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+};
+
+let usuario = store.get('vc_usuario', null);
+let pontos = store.get('vc_pontos', []);
+let despesas = store.get('vc_despesas', []);
+let mensagens = store.get('vc_mensagens', [
+  {from:'them', autor:'Supervisor', texto:'Bom dia! Confirmar chegada na filial Sul às 8h.', hora:'07:52'}
+]);
+
+function fazerLogin(){
+  const nome = document.getElementById('loginNome').value.trim();
+  const matricula = document.getElementById('loginMatricula').value.trim();
+  if(!nome || !matricula){ alert('Preencha nome e matrícula.'); return; }
+  usuario = { nome, matricula };
+  store.set('vc_usuario', usuario);
+  entrarNoApp();
+}
+
+function entrarNoApp(){
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'flex';
+  document.getElementById('avatarInitials').textContent = usuario.nome.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('perfilNome').textContent = usuario.nome;
+  document.getElementById('perfilMatricula').textContent = 'Matrícula ' + usuario.matricula;
+  renderPontos(); renderDespesas(); renderChat();
+}
+
+function sair(){
+  usuario = null; localStorage.removeItem('vc_usuario');
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+function irPara(nome){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+nome).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.screen===nome));
+  document.getElementById('chatInputBar').style.display = (nome==='chat') ? 'flex' : 'none';
+}
+
+// ---------- Relógio ----------
+function tick(){
+  const now = new Date();
+  document.getElementById('relogio').textContent = now.toLocaleTimeString('pt-BR');
+  document.getElementById('dataHoje').textContent = now.toLocaleDateString('pt-BR', {weekday:'long', day:'2-digit', month:'long'});
+}
+setInterval(tick, 1000); tick();
+
+// ---------- Ponto ----------
+function baterPonto(){
+  const geoStatus = document.getElementById('geoStatus');
+  const tipo = (pontos.filter(p => isHoje(p.timestamp)).length % 2 === 0) ? 'entrada' : 'saida';
+  if(!navigator.geolocation){
+    registrarPonto(tipo, null);
+    return;
+  }
+  geoStatus.textContent = 'Obtendo localização…';
+  navigator.geolocation.getCurrentPosition(
+    (pos)=>{
+      registrarPonto(tipo, {lat: pos.coords.latitude, lng: pos.coords.longitude});
+      geoStatus.textContent = 'Localização registrada ✓';
+    },
+    (err)=>{
+      registrarPonto(tipo, null);
+      geoStatus.textContent = 'Registrado sem GPS (permissão negada)';
+    },
+    {enableHighAccuracy:true, timeout:8000}
+  );
+}
+
+function isHoje(ts){
+  const d = new Date(ts); const n = new Date();
+  return d.toDateString() === n.toDateString();
+}
+
+function registrarPonto(tipo, coords){
+  pontos.unshift({ tipo, timestamp: Date.now(), coords });
+  store.set('vc_pontos', pontos);
+  renderPontos();
+}
+
+function renderPontos(){
+  const el = document.getElementById('listaPonto');
+  const hoje = pontos.filter(p=>isHoje(p.timestamp));
+  if(hoje.length===0){ el.innerHTML = '<div class="empty">Nenhum registro ainda</div>'; return; }
+  el.innerHTML = hoje.map(p=>{
+    const hora = new Date(p.timestamp).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+    const local = p.coords ? p.coords.lat.toFixed(4)+', '+p.coords.lng.toFixed(4) : 'sem GPS';
+    return `<div class="entry-row">
+      <div><div>${hora}</div><div style="font-size:11px;color:var(--cinza-texto)">${local}</div></div>
+      <span class="tag ${p.tipo}">${p.tipo === 'entrada' ? 'Entrada' : 'Saída'}</span>
+    </div>`;
+  }).join('');
+}
+
+// ---------- Despesas ----------
+document.getElementById('expFile').addEventListener('change', (e)=>{
+  const btn = document.getElementById('expFileBtn');
+  btn.classList.toggle('has-file', e.target.files.length>0);
+  btn.firstChild.textContent = e.target.files.length>0 ? '📎 Recibo anexado ✓' : '📎 Anexar foto do recibo';
+});
+
+function adicionarDespesa(){
+  const categoria = document.getElementById('expCategoria').value;
+  const valor = parseFloat(document.getElementById('expValor').value);
+  if(!valor || valor<=0){ alert('Informe um valor válido.'); return; }
+  despesas.unshift({ categoria, valor, data: Date.now(), status:'pendente' });
+  store.set('vc_despesas', despesas);
+  document.getElementById('expValor').value = '';
+  document.getElementById('expFile').value = '';
+  document.getElementById('expFileBtn').classList.remove('has-file');
+  renderDespesas();
+}
+
+function renderDespesas(){
+  const el = document.getElementById('listaDespesas');
+  if(despesas.length===0){ el.innerHTML = '<div class="empty">Nenhuma despesa registrada</div>'; return; }
+  el.innerHTML = despesas.map(d=>{
+    const data = new Date(d.data).toLocaleDateString('pt-BR');
+    return `<div class="exp-row">
+      <div><div>${d.categoria}</div><div style="font-size:11px;color:var(--cinza-texto)">${data}</div></div>
+      <div style="text-align:right"><div class="exp-value">R$ ${d.valor.toFixed(2)}</div><span class="status-pill">Pendente</span></div>
+    </div>`;
+  }).join('');
+}
+
+// ---------- Chat ----------
+function renderChat(){
+  const el = document.getElementById('chatList');
+  el.innerHTML = mensagens.map(m=>`
+    <div class="bubble ${m.from}">
+      ${m.texto}
+      <span class="bubble-meta">${m.from==='them' ? m.autor+' · ' : ''}${m.hora}</span>
+    </div>`).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function enviarMensagem(){
+  const input = document.getElementById('chatInput');
+  const texto = input.value.trim();
+  if(!texto) return;
+  const hora = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+  mensagens.push({from:'me', texto, hora});
+  store.set('vc_mensagens', mensagens);
+  input.value = '';
+  renderChat();
+}
+
+// ---------- Instalação PWA ----------
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e)=>{
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBanner').style.display = 'flex';
+});
+function instalarApp(){
+  document.getElementById('installBanner').style.display = 'none';
+  if(deferredPrompt){ deferredPrompt.prompt(); deferredPrompt = null; }
+}
+
+// ---------- Service worker ----------
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+
+// ---------- Boot ----------
+if(usuario){ entrarNoApp(); }
+</script>
+</body>
+</html>
