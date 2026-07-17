@@ -408,6 +408,309 @@ function renderDespesas(){
   el.innerHTML = despesas.map(d=>{
     const data = new Date(d.data).toLocaleDateString('pt-BR');
     return `<div class="exp-row">
+      <div><div>${d.cat  .kpi-card{background:var(--azul-2); border:1px solid #10265e; border-radius:14px; padding:14px;}
+  .kpi-value{font-size:22px; font-weight:800;}
+  .kpi-label{font-size:11px; color:var(--cinza-texto); margin-top:2px;}
+  .chart-wrap{position:relative; height:200px; margin-top:6px;}
+  .month-select{margin-bottom:14px;}
+  .export-row{display:flex; gap:10px; margin-top:4px;}
+  .export-row button{flex:1;}
+  .btn-secondary{background:var(--azul-2); color:var(--branco); border:1px solid #1c3a7c; font-weight:700; padding:14px 16px; border-radius:12px; font-size:14px; cursor:pointer;}
+  table.rel-table{width:100%; border-collapse:collapse; font-size:12px;}
+  table.rel-table th{color:var(--laranja); text-align:left; font-size:10px; text-transform:uppercase; padding:6px 4px; border-bottom:1px solid #10265e;}
+  table.rel-table td{padding:7px 4px; border-bottom:1px solid #10265e; color:var(--branco);}
+
+  /* ---------- BOTTOM NAV ---------- */
+  .bottom-nav{
+    position:fixed; bottom:0; left:0; right:0; max-width:480px; margin:0 auto;
+    display:flex; background: var(--azul); border-top:1px solid #10265e; padding:6px 4px calc(env(safe-area-inset-bottom) + 6px);
+  }
+  .nav-btn{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 0; background:none; border:none; color:var(--cinza-texto); font-size:10px; cursor:pointer;}
+  .nav-btn .ic{font-size:19px;}
+  .nav-btn.active{color: var(--laranja);}
+
+  .install-banner{
+    display:none; position:absolute; top:10px; left:10px; right:10px; background:var(--laranja); color:var(--azul);
+    border-radius:12px; padding:10px 14px; font-size:12px; font-weight:700; align-items:center; justify-content:space-between; z-index:20;
+  }
+  .install-banner button{background:var(--azul); color:var(--branco); border:none; border-radius:8px; padding:6px 10px; font-size:11px; font-weight:700; cursor:pointer;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- LOGIN -->
+  <div class="login-screen" id="loginScreen">
+    <div class="logo-mark"><img src="icons/icon-192.png" alt="Ville" /></div>
+    <div class="brand-title">VILLE CHAT <span>PLUS</span></div>
+    <div class="login-form">
+      <input id="loginNome" type="text" placeholder="Nome completo" />
+      <input id="loginMatricula" type="text" placeholder="Matrícula" />
+      <button class="btn-primary" onclick="fazerLogin()">Entrar</button>
+    </div>
+    <div class="hint">Gestão de ponto, despesas e comunicação da equipe de campo</div>
+  </div>
+
+  <!-- APP -->
+  <div id="mainApp" style="display:none; flex-direction:column; height:100%;">
+    <div class="install-banner" id="installBanner">
+      <span>Instale o app na tela inicial</span>
+      <button onclick="instalarApp()">Instalar</button>
+    </div>
+
+    <div class="topbar">
+      <div class="topbar-title">VILLE CHAT <span>PLUS</span></div>
+      <div class="avatar" id="avatarInitials">–</div>
+    </div>
+
+    <!-- PONTO -->
+    <div class="screen active" id="screen-ponto">
+      <div class="card">
+        <div class="clock" id="relogio">--:--:--</div>
+        <div class="clock-date" id="dataHoje">--</div>
+        <button class="bater-btn" onclick="baterPonto()">
+          BATER PONTO
+          <small>toque para registrar</small>
+        </button>
+        <div class="geo-status" id="geoStatus">Aguardando localização…</div>
+      </div>
+      <div class="card">
+        <div class="section-label">Registros de hoje</div>
+        <div id="listaPonto"><div class="empty">Nenhum registro ainda</div></div>
+      </div>
+    </div>
+
+    <!-- DESPESAS -->
+    <div class="screen" id="screen-despesas">
+      <div class="card">
+        <div class="section-label">Nova despesa</div>
+        <select id="expCategoria">
+          <option value="Combustível">Combustível</option>
+          <option value="Alimentação">Alimentação</option>
+          <option value="Hospedagem">Hospedagem</option>
+          <option value="Outros">Outros</option>
+        </select>
+        <input id="expValor" type="number" step="0.01" placeholder="Valor (R$)" />
+        <label class="file-btn" id="expFileBtn">
+          📎 Anexar foto do recibo
+          <input type="file" id="expFile" accept="image/*" capture="environment" style="display:none" />
+        </label>
+        <button class="btn-primary" onclick="adicionarDespesa()">Adicionar despesa</button>
+      </div>
+      <div class="card">
+        <div class="section-label">Minhas despesas</div>
+        <div id="listaDespesas"><div class="empty">Nenhuma despesa registrada</div></div>
+      </div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="screen" id="screen-chat">
+      <div class="card" style="min-height:60vh; display:flex; flex-direction:column;">
+        <div class="section-label">Equipe de Campo</div>
+        <div class="chat-list" id="chatList"></div>
+      </div>
+    </div>
+
+    <!-- RELATÓRIO / DASHBOARD -->
+    <div class="screen" id="screen-relatorio">
+      <div class="card month-select">
+        <div class="section-label" style="margin-bottom:8px;">Período</div>
+        <select id="relMes" onchange="renderRelatorio()"></select>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-value" id="kpiHoras">0h</div>
+          <div class="kpi-label">Horas trabalhadas</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value" id="kpiDespesas">R$ 0,00</div>
+          <div class="kpi-label">Total em despesas</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value" id="kpiDias">0</div>
+          <div class="kpi-label">Dias com registro</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-value" id="kpiPendentes">0</div>
+          <div class="kpi-label">Despesas pendentes</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-label">Despesas por categoria</div>
+        <div class="chart-wrap"><canvas id="chartCategorias"></canvas></div>
+      </div>
+
+      <div class="card">
+        <div class="section-label">Horas por dia</div>
+        <div class="chart-wrap"><canvas id="chartHoras"></canvas></div>
+      </div>
+
+      <div class="card">
+        <div class="export-row">
+          <button class="btn-primary" onclick="gerarPDF()">📄 Exportar PDF</button>
+          <button class="btn-secondary" onclick="exportarCSV()">📑 Exportar CSV</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERFIL -->
+    <div class="screen" id="screen-perfil">
+      <div class="card">
+        <div class="profile-name" id="perfilNome">–</div>
+        <div class="profile-sub" id="perfilMatricula">–</div>
+        <div class="info-row"><span>Status</span><span>Ativo</span></div>
+        <div class="info-row"><span>Sincronização</span><span id="syncStatus">Dados salvos no aparelho</span></div>
+        <div class="info-row"><span>Versão</span><span>MVP 0.1</span></div>
+      </div>
+      <button class="btn-ghost" style="width:100%" onclick="sair()">Sair</button>
+      <div class="footer-credit">Desenvolvido por Marcos Garçon</div>
+    </div>
+
+    <div class="chat-input-bar" id="chatInputBar" style="display:none;">
+      <input id="chatInput" type="text" placeholder="Mensagem…" onkeydown="if(event.key==='Enter')enviarMensagem()" />
+      <button class="send-btn" onclick="enviarMensagem()">➤</button>
+    </div>
+
+    <div class="bottom-nav">
+      <button class="nav-btn active" data-screen="ponto" onclick="irPara('ponto')"><span class="ic">⏱️</span>Ponto</button>
+      <button class="nav-btn" data-screen="despesas" onclick="irPara('despesas')"><span class="ic">🧾</span>Despesas</button>
+      <button class="nav-btn" data-screen="chat" onclick="irPara('chat')"><span class="ic">💬</span>Chat</button>
+      <button class="nav-btn" data-screen="relatorio" onclick="irPara('relatorio')"><span class="ic">📊</span>Relatório</button>
+      <button class="nav-btn" data-screen="perfil" onclick="irPara('perfil')"><span class="ic">👤</span>Perfil</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+// ---------- Persistência local (mesma base que sincronizará com o backend depois) ----------
+const store = {
+  get(key, fallback){ try{ return JSON.parse(localStorage.getItem(key)) ?? fallback; }catch(e){ return fallback; } },
+  set(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+};
+
+let usuario = store.get('vc_usuario', null);
+let pontos = store.get('vc_pontos', []);
+let despesas = store.get('vc_despesas', []);
+let mensagens = store.get('vc_mensagens', [
+  {from:'them', autor:'Supervisor', texto:'Bom dia! Confirmar chegada na filial Sul às 8h.', hora:'07:52'}
+]);
+
+function fazerLogin(){
+  const nome = document.getElementById('loginNome').value.trim();
+  const matricula = document.getElementById('loginMatricula').value.trim();
+  if(!nome || !matricula){ alert('Preencha nome e matrícula.'); return; }
+  usuario = { nome, matricula };
+  store.set('vc_usuario', usuario);
+  entrarNoApp();
+}
+
+function entrarNoApp(){
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'flex';
+  document.getElementById('avatarInitials').textContent = usuario.nome.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('perfilNome').textContent = usuario.nome;
+  document.getElementById('perfilMatricula').textContent = 'Matrícula ' + usuario.matricula;
+  renderPontos(); renderDespesas(); renderChat(); popularMesesRelatorio();
+}
+
+function sair(){
+  usuario = null; localStorage.removeItem('vc_usuario');
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+function irPara(nome){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+nome).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.screen===nome));
+  document.getElementById('chatInputBar').style.display = (nome==='chat') ? 'flex' : 'none';
+  if(nome==='relatorio') renderRelatorio();
+}
+
+// ---------- Relógio ----------
+function tick(){
+  const now = new Date();
+  document.getElementById('relogio').textContent = now.toLocaleTimeString('pt-BR');
+  document.getElementById('dataHoje').textContent = now.toLocaleDateString('pt-BR', {weekday:'long', day:'2-digit', month:'long'});
+}
+setInterval(tick, 1000); tick();
+
+// ---------- Ponto ----------
+function baterPonto(){
+  const geoStatus = document.getElementById('geoStatus');
+  const tipo = (pontos.filter(p => isHoje(p.timestamp)).length % 2 === 0) ? 'entrada' : 'saida';
+  if(!navigator.geolocation){
+    registrarPonto(tipo, null);
+    return;
+  }
+  geoStatus.textContent = 'Obtendo localização…';
+  navigator.geolocation.getCurrentPosition(
+    (pos)=>{
+      registrarPonto(tipo, {lat: pos.coords.latitude, lng: pos.coords.longitude});
+      geoStatus.textContent = 'Localização registrada ✓';
+    },
+    (err)=>{
+      registrarPonto(tipo, null);
+      geoStatus.textContent = 'Registrado sem GPS (permissão negada)';
+    },
+    {enableHighAccuracy:true, timeout:8000}
+  );
+}
+
+function isHoje(ts){
+  const d = new Date(ts); const n = new Date();
+  return d.toDateString() === n.toDateString();
+}
+
+function registrarPonto(tipo, coords){
+  pontos.unshift({ tipo, timestamp: Date.now(), coords });
+  store.set('vc_pontos', pontos);
+  renderPontos();
+}
+
+function renderPontos(){
+  const el = document.getElementById('listaPonto');
+  const hoje = pontos.filter(p=>isHoje(p.timestamp));
+  if(hoje.length===0){ el.innerHTML = '<div class="empty">Nenhum registro ainda</div>'; return; }
+  el.innerHTML = hoje.map(p=>{
+    const hora = new Date(p.timestamp).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+    const local = p.coords ? p.coords.lat.toFixed(4)+', '+p.coords.lng.toFixed(4) : 'sem GPS';
+    return `<div class="entry-row">
+      <div><div>${hora}</div><div style="font-size:11px;color:var(--cinza-texto)">${local}</div></div>
+      <span class="tag ${p.tipo}">${p.tipo === 'entrada' ? 'Entrada' : 'Saída'}</span>
+    </div>`;
+  }).join('');
+}
+
+// ---------- Despesas ----------
+document.getElementById('expFile').addEventListener('change', (e)=>{
+  const btn = document.getElementById('expFileBtn');
+  btn.classList.toggle('has-file', e.target.files.length>0);
+  btn.firstChild.textContent = e.target.files.length>0 ? '📎 Recibo anexado ✓' : '📎 Anexar foto do recibo';
+});
+
+function adicionarDespesa(){
+  const categoria = document.getElementById('expCategoria').value;
+  const valor = parseFloat(document.getElementById('expValor').value);
+  if(!valor || valor<=0){ alert('Informe um valor válido.'); return; }
+  despesas.unshift({ categoria, valor, data: Date.now(), status:'pendente' });
+  store.set('vc_despesas', despesas);
+  document.getElementById('expValor').value = '';
+  document.getElementById('expFile').value = '';
+  document.getElementById('expFileBtn').classList.remove('has-file');
+  renderDespesas();
+}
+
+function renderDespesas(){
+  const el = document.getElementById('listaDespesas');
+  if(despesas.length===0){ el.innerHTML = '<div class="empty">Nenhuma despesa registrada</div>'; return; }
+  el.innerHTML = despesas.map(d=>{
+    const data = new Date(d.data).toLocaleDateString('pt-BR');
+    return `<div class="exp-row">
       <div><div>${d.cat    <div class="bottom-nav">
       <button class="nav-btn active" data-screen="ponto" onclick="irPara('ponto')"><span class="ic">⏱️</span>Ponto</button>
       <button class="nav-btn" data-screen="despesas" onclick="irPara('despesas')"><span class="ic">🧾</span>Despesas</button>
